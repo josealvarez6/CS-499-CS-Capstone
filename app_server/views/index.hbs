@@ -1,2 +1,63 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+<!DOCTYPE html>
+<!-- Website template by freewebsitetemplates.com -->
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Travlr Getaways Website Template</title>
+	<link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+<body>
+	<div id="background">
+		<div id="page">
+			{{> header}}
+			<div id="contents">
+				<div id="adbox">
+					<img src="/images/{{home.hero.image}}" alt="Img">
+					<h1>{{home.hero.headline}}</h1>
+					<p>
+						{{home.hero.text}}
+					</p>
+				</div>
+				<div id="main">
+					<div class="box">
+						<div>
+							<div>
+								<h3>Latest Blog</h3>
+								<ul>
+			{{#each home.blogs}}
+									<li>
+										<h4><a href="/news">{{title}}</a></h4>
+										<span>{{date}}</span>
+										<p>
+											{{summary}}
+										</p>
+									</li>
+			{{/each}}
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div id="testimonials" class="box">
+						<div>
+							<div>
+								<h3>Testimonials</h3>
+								<p>
+									“{{home.testimonial.quote}}” <span>- <a href="/">{{home.testimonial.author}}</a></span>
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="sidebar">
+			{{#each home.sidebar}}
+					<div class="section">
+						<a href="{{link}}"><img src="/images/{{image}}" alt="Img"></a>
+					</div>
+			{{/each}}
+				</div>
+			</div>
+		</div>
+		{{> footer}}
+	</div>
+</body>
+</html>
