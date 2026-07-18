@@ -5,6 +5,10 @@ import { User } from '../models/user';
 import { AuthResponse } from '../models/auth-response';
 import { BROWSER_STORAGE } from '../storage';
 
+// Import the current application environment. This allows API
+// endpoints to be configured without modifying source code.
+import { environment } from '../../environments/environment'
+
 import { Trip } from '../models/trip';
 
 @Injectable({
@@ -18,25 +22,30 @@ export class TripDataService {
     @Inject(BROWSER_STORAGE) private storage: Storage
   ) { }
 
-  url = 'http://localhost:3000/api/trips';
-  baseUrl = 'http://localhost:3000/api';
+  // url = 'http://localhost:3000/api/trips';
+  //baseUrl = 'http://localhost:3000/api';
+
+  // Base API URL used throught the service.
+  private readonly apiBaseUrl = environment.apiBaseUrl;
+  // Endpoint used for all trip-related requests.
+  private tripsUrl = `${this.apiBaseUrl}/trips`;
  
   getTrips() : Observable<Trip[]> {
-    return this.http.get<Trip[]>(this.url);
+    return this.http.get<Trip[]>(this.tripsUrl);
   }
 
   addTrip(formData: Trip) : Observable<Trip> {
-    return this.http.post<Trip>(this.url, formData);
+    return this.http.post<Trip>(this.tripsUrl, formData);
   }
 
   getTrip(tripCode: string) : Observable<Trip[]> {
     // console.log('Inside TripDataService::getTrips');
-    return this.http.get<Trip[]>(this.url + '/' + tripCode);
+    return this.http.get<Trip[]>(this.tripsUrl + '/' + tripCode);
   }
 
   updateTrip(formData: Trip) : Observable<Trip> {
     // console.log('Inside TripDataService::addTrips');
-    return this.http.put<Trip>(this.url + '/' + formData.code, formData);
+    return this.http.put<Trip>(this.tripsUrl + '/' + formData.code, formData);
   }
 
   // Call to our /login endpoint, returns JWT
@@ -60,6 +69,6 @@ export class TripDataService {
       password: passwd
     };
 
-    return this.http.post<AuthResponse>(this.baseUrl + '/' + endpoint, formData);
+    return this.http.post<AuthResponse>(this.apiBaseUrl + '/' + endpoint, formData);
   }
 }
