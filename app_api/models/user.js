@@ -12,6 +12,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    // Role used to control access to administrative features.
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
     hash: String,
     salt: String
 });
@@ -35,6 +42,10 @@ userSchema.methods.generateJWT = function() {
             _id: this._id,
             email: this.email,
             name: this.name,
+
+            // Include the user role so the front end and API can determine
+            // wheter admin access is allowed
+            role: this.role
         },
         process.env.JWT_SECRET, // SECRET stored in .env file
         { expiresIn: '1h' }); // Token expires an hour from creation
