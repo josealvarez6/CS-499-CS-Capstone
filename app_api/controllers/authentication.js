@@ -35,6 +35,15 @@ const register = async(req, res) => {
 };
 
 const login = (req, res) => {
+
+    //TEMP!
+    console.log('Login request:', {
+        contentType: req.get('content-type'),
+        email: req.body.email,
+        passwordLength: req.body.password?.length,
+        bodyKeys: Object.keys(req.body)
+    });
+    
     // Validate message to ensure that email and password are present.
     if (!req.body.email || !req.body.password) {
         return res
