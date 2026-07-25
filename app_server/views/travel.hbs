@@ -2,53 +2,364 @@
 <!-- Website template by freewebsitetemplates.com -->
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Travel - Travlr Getaways</title>
-	<link rel="stylesheet" href="/css/style.css" type="text/css">
+    <meta charset="UTF-8">
+    <title>Travel - Travlr Getaways</title>
+    <link
+        rel="stylesheet"
+        href="/css/style.css"
+        type="text/css">
 </head>
 
 <body>
-	<div id="background">
-		<div id="page">
+    <div id="background">
+        <div id="page">
 
-			{{> header }}
+            {{> header }}
 
-			<div id="contents">
-				<div class="box">
-					<div>
-						<div class="body">
+            <div id="contents">
+                <div class="box">
+                    <div>
+                        <div class="body">
 
-							<h1>Travel</h1>
+                            <h1>Travel</h1>
 
-							<ul id="sites">
-								{{#each trips}}
-									<li>
-										<a href="/api/trips/{{this.code}}">
-											<img
-												src="/images/{{this.image}}"
-												alt="{{this.name}}">
-										</a>
+                            <!--
+                                The GET form places the selected values in
+                                the browser query string. The travel controller
+                                forwards these values to the reusable trips API.
+                            -->
+                            <form
+                                action="/travel"
+                                method="GET"
+                                class="travel-filter-form">
 
-										<h2>
-											<a href="/api/trips/{{this.code}}">
-												{{this.name}}
-											</a>
-										</h2>
+                                <div class="travel-filter-grid">
 
-										<p>{{this.description}}</p>
-									</li>
-								{{/each}}
-							</ul>
+                                    <!-- Destination search control. -->
+                                    <div class="travel-filter-field">
+                                        <label for="destination">
+                                            Destination
+                                        </label>
 
-						</div>
-					</div>
-				</div>
-			</div>
+                                        <input
+                                            id="destination"
+                                            name="destination"
+                                            type="text"
+                                            value="{{filters.destination}}"
+                                            placeholder="Search destinations">
+                                    </div>
 
-		</div>
+                                    <!-- Minimum-price filter. -->
+                                    <div class="travel-filter-field">
+                                        <label for="minPrice">
+                                            Minimum Price
+                                        </label>
 
-		{{> footer }}
+                                        <input
+                                            id="minPrice"
+                                            name="minPrice"
+                                            type="number"
+                                            min="0"
+                                            value="{{filters.minPrice}}"
+                                            placeholder="$0">
+                                    </div>
 
-	</div>
+                                    <!-- Maximum-price filter. -->
+                                    <div class="travel-filter-field">
+                                        <label for="maxPrice">
+                                            Maximum Price
+                                        </label>
+
+                                        <input
+                                            id="maxPrice"
+                                            name="maxPrice"
+                                            type="number"
+                                            min="0"
+                                            value="{{filters.maxPrice}}"
+                                            placeholder="$5000">
+                                    </div>
+
+                                    <!-- Exact trip-length filter. -->
+                                    <div class="travel-filter-field">
+                                        <label for="length">
+                                            Length
+                                        </label>
+
+                                        <input
+                                            id="length"
+                                            name="length"
+                                            type="number"
+                                            min="1"
+                                            value="{{filters.length}}"
+                                            placeholder="Days">
+                                    </div>
+
+                                    <!-- Availability filter. -->
+                                    <div class="travel-filter-field">
+                                        <label for="available">
+                                            Availability
+                                        </label>
+
+                                        <select
+                                            id="available"
+                                            name="available">
+
+                                            <option
+                                                value=""
+                                                {{#if selectedValues.availableAll}}
+                                                    selected
+                                                {{/if}}>
+                                                All Trips
+                                            </option>
+
+                                            <option
+                                                value="true"
+                                                {{#if selectedValues.availableTrue}}
+                                                    selected
+                                                {{/if}}>
+                                                Upcoming Trips
+                                            </option>
+
+                                            <option
+                                                value="false"
+                                                {{#if selectedValues.availableFalse}}
+                                                    selected
+                                                {{/if}}>
+                                                Past Trips
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Sorting field selection. -->
+                                    <div class="travel-filter-field">
+                                        <label for="sort">
+                                            Sort By
+                                        </label>
+
+                                        <select
+                                            id="sort"
+                                            name="sort">
+
+                                            <option
+                                                value="name"
+                                                {{#if selectedValues.sortName}}
+                                                    selected
+                                                {{/if}}>
+                                                Name
+                                            </option>
+
+                                            <option
+                                                value="resort"
+                                                {{#if selectedValues.sortResort}}
+                                                    selected
+                                                {{/if}}>
+                                                Resort
+                                            </option>
+
+                                            <option
+                                                value="price"
+                                                {{#if selectedValues.sortPrice}}
+                                                    selected
+                                                {{/if}}>
+                                                Price
+                                            </option>
+
+                                            <option
+                                                value="length"
+                                                {{#if selectedValues.sortLength}}
+                                                    selected
+                                                {{/if}}>
+                                                Length
+                                            </option>
+
+                                            <option
+                                                value="start"
+                                                {{#if selectedValues.sortStart}}
+                                                    selected
+                                                {{/if}}>
+                                                Start Date
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Sort-direction selection. -->
+                                    <div class="travel-filter-field">
+                                        <label for="order">
+                                            Direction
+                                        </label>
+
+                                        <select
+                                            id="order"
+                                            name="order">
+
+                                            <option
+                                                value="asc"
+                                                {{#if selectedValues.orderAscending}}
+                                                    selected
+                                                {{/if}}>
+                                                Ascending
+                                            </option>
+
+                                            <option
+                                                value="desc"
+                                                {{#if selectedValues.orderDescending}}
+                                                    selected
+                                                {{/if}}>
+                                                Descending
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Number of results displayed per page. -->
+                                    <div class="travel-filter-field">
+                                        <label for="limit">
+                                            Results Per Page
+                                        </label>
+
+                                        <select
+                                            id="limit"
+                                            name="limit">
+
+                                            <option
+                                                value="3"
+                                                {{#if selectedValues.limitThree}}
+                                                    selected
+                                                {{/if}}>
+                                                3
+                                            </option>
+
+                                            <option
+                                                value="6"
+                                                {{#if selectedValues.limitSix}}
+                                                    selected
+                                                {{/if}}>
+                                                6
+                                            </option>
+
+                                            <option
+                                                value="9"
+                                                {{#if selectedValues.limitNine}}
+                                                    selected
+                                                {{/if}}>
+                                                9
+                                            </option>
+
+                                            <option
+                                                value="12"
+                                                {{#if selectedValues.limitTwelve}}
+                                                    selected
+                                                {{/if}}>
+                                                12
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="travel-filter-actions">
+                                    <button type="submit">
+                                        Search
+                                    </button>
+
+                                    <!-- Returning to /travel clears the query string. -->
+                                    <a href="/travel">
+                                        Reset
+                                    </a>
+                                </div>
+                            </form>
+
+                            <!-- Display the number of matching results or an error. -->
+                            {{#if message}}
+                                <p class="travel-results-message">
+                                    {{message}}
+                                </p>
+                            {{/if}}
+
+                            <!-- Display the current page of trip results. -->
+                            <ul id="sites">
+                                {{#each trips}}
+                                    <li>
+                                        <a href="/api/trips/{{this.code}}">
+                                            <img
+                                                src="/images/{{this.image}}"
+                                                alt="{{this.name}}">
+                                        </a>
+
+                                        <h2>
+                                            <a href="/api/trips/{{this.code}}">
+                                                {{this.name}}
+                                            </a>
+                                        </h2>
+
+                                        <p>{{this.description}}</p>
+
+                                        <!-- Display useful sortable trip details. -->
+                                        <p class="travel-trip-details">
+                                            <strong>Resort:</strong>
+                                            {{this.resort}}
+
+                                            <br>
+
+                                            <strong>Price:</strong>
+                                            {{this.perPerson}}
+
+                                            <br>
+
+                                            <strong>Length:</strong>
+                                            {{this.length}} days
+                                        </p>
+                                    </li>
+                                {{/each}}
+                            </ul>
+
+                            <!--
+                                Pagination links are generated by the controller
+                                so all selected filters remain active while the
+                                user moves between result pages.
+                            -->
+                            {{#if pagination.totalItems}}
+                                <div class="travel-pagination">
+
+                                    <div class="travel-pagination-control">
+                                        {{#if previousPageUrl}}
+                                            <a href="{{previousPageUrl}}">
+                                                Previous
+                                            </a>
+                                        {{else}}
+                                            <span class="disabled">
+                                                Previous
+                                            </span>
+                                        {{/if}}
+                                    </div>
+
+                                    <div class="travel-pagination-status">
+                                        Page {{pagination.currentPage}}
+                                        of {{pagination.totalPages}}
+                                    </div>
+
+                                    <div class="travel-pagination-control">
+                                        {{#if nextPageUrl}}
+                                            <a href="{{nextPageUrl}}">
+                                                Next
+                                            </a>
+                                        {{else}}
+                                            <span class="disabled">
+                                                Next
+                                            </span>
+                                        {{/if}}
+                                    </div>
+
+                                </div>
+                            {{/if}}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {{> footer }}
+
+    </div>
 </body>
 </html>

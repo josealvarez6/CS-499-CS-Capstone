@@ -547,3 +547,137 @@ hr {
 #connect a.googleplus:hover {
 	background-position: 0 -197px;
 }
+
+/* Public trip search and filtering panel. */
+.travel-filter-form {
+    margin: 0 0 25px;
+    padding: 20px;
+    background: #f4f1ea;
+    border: 1px solid #d7d0c4;
+    border-radius: 4px;
+}
+
+/* Responsive layout for the filter controls. */
+.travel-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(170px, 1fr)
+    );
+    gap: 15px;
+}
+
+/* Arrange each label above its associated control. */
+.travel-filter-field {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Improve filter-label readability. */
+.travel-filter-field label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Apply consistent sizing to the form controls. */
+.travel-filter-field input,
+.travel-filter-field select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 38px;
+    padding: 8px;
+    border: 1px solid #b8b1a6;
+    border-radius: 3px;
+    background: #fff;
+}
+
+/* Position the Search and Reset controls. */
+.travel-filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+/* Style the Search button and Reset link consistently. */
+.travel-filter-actions button,
+.travel-filter-actions a {
+    display: inline-block;
+    padding: 9px 18px;
+    border: 1px solid #1d5f65;
+    border-radius: 3px;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Primary search action. */
+.travel-filter-actions button {
+    color: #fff;
+    background: #1d5f65;
+}
+
+/* Secondary reset action. */
+.travel-filter-actions a {
+    color: #1d5f65;
+    background: #fff;
+}
+
+/* Result-count or status message. */
+.travel-results-message {
+    margin: 15px 0;
+    padding: 10px;
+    background: #eef3f1;
+    border-left: 4px solid #1d5f65;
+}
+
+/* Additional information displayed on each trip card. */
+.travel-trip-details {
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+/* Pagination layout. */
+.travel-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    clear: both;
+    margin: 25px 0 10px;
+    padding-top: 20px;
+    border-top: 1px solid #d7d0c4;
+}
+
+/* Keep both pagination control areas the same width. */
+.travel-pagination-control {
+    width: 100px;
+}
+
+/* Align the Next control to the right. */
+.travel-pagination-control:last-child {
+    text-align: right;
+}
+
+/* Style active pagination links. */
+.travel-pagination a {
+    display: inline-block;
+    padding: 8px 14px;
+    color: #fff;
+    background: #1d5f65;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+/* Identify unavailable pagination controls. */
+.travel-pagination .disabled {
+    display: inline-block;
+    padding: 8px 14px;
+    color: #888;
+    background: #ddd;
+    border-radius: 3px;
+}
+
+/* Emphasize the current page information. */
+.travel-pagination-status {
+    font-weight: bold;
+    text-align: center;
+}
