@@ -1,9 +1,232 @@
-<!-- <pre>{{ trips | json }}</pre>> -->
-<div *ngIf="isLoggedIn()">
-    <button (click)="addTrip()" class="btn btn-info">Add Trip</button>
+<!-- Display the administrator-only Add Trip control. -->
+<div *ngIf="isLoggedIn()" class="mb-3">
+  <button
+    type="button"
+    (click)="addTrip()"
+    class="btn btn-info">
+    Add Trip
+  </button>
 </div>
-<div class="row"> 
-    <div *ngFor="let trip of trips" class="col-md-4"> 
-        <app-trip-card [trip]="trip" class="card deck mt-2"></app-trip-card>
-    </div> 
- </div> 
+
+<!-- Search, filter, sorting, and pagination controls. -->
+<form
+  (ngSubmit)="applyFilters()"
+  class="border rounded p-3 mb-4">
+
+  <div class="row g-3">
+
+    <!-- Search by trip name, resort, or description. -->
+    <div class="col-md-4">
+      <label for="destination" class="form-label">
+        Search Destination
+      </label>
+
+      <input
+        id="destination"
+        name="destination"
+        type="text"
+        class="form-control"
+        [(ngModel)]="destination"
+        placeholder="Example: Atlanta">
+    </div>
+
+    <!-- Minimum price filter. -->
+    <div class="col-md-2">
+      <label for="minPrice" class="form-label">
+        Minimum Price
+      </label>
+
+      <input
+        id="minPrice"
+        name="minPrice"
+        type="number"
+        min="0"
+        class="form-control"
+        [(ngModel)]="minPrice"
+        placeholder="$0">
+    </div>
+
+    <!-- Maximum price filter. -->
+    <div class="col-md-2">
+      <label for="maxPrice" class="form-label">
+        Maximum Price
+      </label>
+
+      <input
+        id="maxPrice"
+        name="maxPrice"
+        type="number"
+        min="0"
+        class="form-control"
+        [(ngModel)]="maxPrice"
+        placeholder="$5000">
+    </div>
+
+    <!-- Exact trip-length filter. -->
+    <div class="col-md-2">
+      <label for="tripLength" class="form-label">
+        Length
+      </label>
+
+      <input
+        id="tripLength"
+        name="tripLength"
+        type="number"
+        min="1"
+        class="form-control"
+        [(ngModel)]="tripLength"
+        placeholder="Days">
+    </div>
+
+    <!-- Availability filter. -->
+    <div class="col-md-2">
+      <label for="availability" class="form-label">
+        Availability
+      </label>
+
+      <select
+        id="availability"
+        name="availability"
+        class="form-select"
+        [(ngModel)]="availability">
+
+        <option value="">All trips</option>
+        <option value="true">Upcoming trips</option>
+        <option value="false">Past trips</option>
+      </select>
+    </div>
+
+    <!-- Select the property used to sort the results. -->
+    <div class="col-md-3">
+      <label for="sort" class="form-label">
+        Sort By
+      </label>
+
+      <select
+        id="sort"
+        name="sort"
+        class="form-select"
+        [(ngModel)]="sort">
+
+        <option value="name">Name</option>
+        <option value="resort">Resort</option>
+        <option value="price">Price</option>
+        <option value="length">Length</option>
+        <option value="start">Start Date</option>
+      </select>
+    </div>
+
+    <!-- Select the direction used to sort the results. -->
+    <div class="col-md-3">
+      <label for="order" class="form-label">
+        Sort Direction
+      </label>
+
+      <select
+        id="order"
+        name="order"
+        class="form-select"
+        [(ngModel)]="order">
+
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+
+    <!-- Select the number of trips returned on each page. -->
+    <div class="col-md-3">
+      <label for="pageSize" class="form-label">
+        Results Per Page
+      </label>
+
+      <select
+        id="pageSize"
+        name="pageSize"
+        class="form-select"
+        [(ngModel)]="pageSize"
+        (change)="changePageSize()">
+
+        <option [ngValue]="3">3</option>
+        <option [ngValue]="6">6</option>
+        <option [ngValue]="9">9</option>
+        <option [ngValue]="12">12</option>
+      </select>
+    </div>
+
+    <!-- Submit and reset controls. -->
+    <div class="col-md-3 d-flex align-items-end gap-2">
+      <button
+        type="submit"
+        class="btn btn-primary">
+        Search
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="resetFilters()">
+        Reset
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Display a loading message while the API request is running. -->
+<div *ngIf="isLoading" class="alert alert-info">
+  Loading trips...
+</div>
+
+<!-- Display API or network errors. -->
+<div *ngIf="errorMessage" class="alert alert-danger">
+  {{ errorMessage }}
+</div>
+
+<!-- Display information about the current result set. -->
+<div
+  *ngIf="!isLoading && !errorMessage && message"
+  class="alert alert-secondary">
+
+  {{ message }}
+</div>
+
+<!-- Display the current page of trip cards. -->
+<div class="row">
+  <div
+    *ngFor="let trip of trips"
+    class="col-md-4">
+
+    <app-trip-card
+      [trip]="trip"
+      class="card deck mt-2">
+    </app-trip-card>
+  </div>
+</div>
+
+<!-- Display pagination controls when results are available. -->
+<div
+  *ngIf="pagination.totalItems > 0"
+  class="d-flex justify-content-between align-items-center mt-4 mb-4">
+
+  <button
+    type="button"
+    class="btn btn-outline-primary"
+    (click)="previousPage()"
+    [disabled]="!pagination.hasPreviousPage">
+
+    Previous
+  </button>
+
+  <span>
+    Page {{ pagination.currentPage }}
+    of {{ pagination.totalPages }}
+  </span>
+
+  <button
+    type="button"
+    class="btn btn-outline-primary"
+    (click)="nextPage()"
+    [disabled]="!pagination.hasNextPage">
+
+    Next
+  </button>
+</div>
