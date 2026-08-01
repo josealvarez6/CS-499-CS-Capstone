@@ -27,7 +27,7 @@
         <div class="form-group">
             <label>Length:</label>
             <input type="text" formControlName="length" 
-            placeholder="Name" class="form-control" 
+            placeholder="Number of days" class="form-control" 
             [ngClass]="{ 'is-invalid': submitted && f['length'].errors }">
             <div *ngIf="submitted && f['length'].errors">
                 <div *ngIf="f['length'].errors?.['required']">

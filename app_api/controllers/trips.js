@@ -107,8 +107,8 @@ const tripsList = async (req, res) => {
             name: 'name',
             destination: 'name',
             resort: 'resort',
-            price: 'numericPrice',
-            length: 'numericLength',
+            price: 'perPerson',
+            length: 'length',
             start: 'start'
         };
 
@@ -178,20 +178,20 @@ const tripsList = async (req, res) => {
         // Add minimum-price and maximum-price conditions only
         // when at least one price filter is supplied.
         if (minimumPrice !== null || maximumPrice !== null) {
-            matchConditions.numericPrice = {};
+            matchConditions.perPerson = {};
 
             if (minimumPrice !== null) {
-                matchConditions.numericPrice.$gte = minimumPrice;
+                matchConditions.perPerson.$gte = minimumPrice;
             }
 
             if (maximumPrice !== null) {
-                matchConditions.numericPrice.$lte = maximumPrice;
+                matchConditions.perPerson.$lte = maximumPrice;
             }
         }
 
         // Match trips with the selected numeric length.
         if (tripLength !== null) {
-            matchConditions.numericLength = tripLength;
+            matchConditions.length = tripLength;
         }
 
         // A future start date is treated as an available trip.
@@ -218,56 +218,6 @@ const tripsList = async (req, res) => {
         // Build the MongoDB aggregation pipeline.
         const pipeline = [
             {
-                // The existing schema stores price and length as strings.
-                // These temporary fields convert them into numbers so
-                // numeric filtering and sorting can be performed correctly.
-                $addFields: {
-                    numericPrice: {
-                        $convert: {
-                            input: {
-                                $replaceAll: {
-                                    input: {
-                                        $replaceAll: {
-                                            input: '$perPerson',
-
-                                            // $literal tells MongoDB to treat the dollar sign
-                                            // as ordinary text instead of a field reference.
-                                            find: {
-                                                $literal: '$'
-                                            },
-                                            replacement: ''
-                                        }
-                                    },
-                                    find: ',',
-                                    replacement: ''
-                                }
-                            },
-                            to: 'double',
-                            onError: null,
-                            onNull: null
-                        }
-                    },
-                    numericLength: {
-                        $convert: {
-                            input: {
-                                $getField: {
-                                    field: 'match',
-                                    input: {
-                                        $regexFind: {
-                                            input: '$length',
-                                            regex: /\d+/
-                                        }
-                                    }
-                                },
-                            },
-                            to: 'int',
-                            onError: null,
-                            onNull: null
-                        }
-                    }
-                }
-            },
-            {
                 // Apply the dynamically generated search and filter rules.
                 $match: matchConditions
             },
@@ -289,14 +239,6 @@ const tripsList = async (req, res) => {
                         },
                         {
                             $limit: limitNumber
-                        },
-                        {
-                            // Remove the temporary numeric fields before
-                            // returning trip data to the Angular client.
-                            $project: {
-                                numericPrice: 0,
-                                numericLength: 0
-                            }
                         }
                     ],
                     metadata: [
@@ -311,8 +253,21 @@ const tripsList = async (req, res) => {
         // Execute the completed aggregation pipeline.
         const results = await Model.aggregate(pipeline).exec();
 
-        // Safely extract the result data.
-        const trips = results[0]?.trips ?? [];
+        // Safely extract the current page of trip documents
+        // returned by the aggregation pipeline.
+        const tripResults = results[0]?.trips ?? [];
+
+        // Populate the createdBy reference after aggregation.
+        // Aggregation returns plain documents, so populate is
+        // performed separately instead of chained to the query.
+        const trips = await Model.populate(
+            tripResults,
+            {
+                path: 'createdBy',
+                select: 'name email'
+            }
+        );
+
         const totalItems =
             results[0]?.metadata[0]?.totalItems ?? 0;
 
@@ -364,8 +319,11 @@ const tripsList = async (req, res) => {
 // and JSON message to the requesting client
 const tripsFindByCode = async (req, res) => {
     try {
+        // Retrieve the requested trip and replace the createdByObjectId with selected 
+        // information from the users collection.
         const q = await Model
             .find({ code: req.params.tripCode })
+            .populate('createdBy', 'name email')
             .exec();
 
         if (!q || q.length === 0) {
@@ -397,6 +355,14 @@ const tripsFindByCode = async (req, res) => {
 // and JSON message to the requesting client
 const tripsAddTrip = async (req, res) => {
     try {
+        // Obtain the authenticated user's identifier from the verified JWT payload 
+        // added by the authorization middleware.
+        const creatorId =
+            req.auth?._id ??
+            req.auth?.id ??
+            req.auth?.userId ??
+            null;
+
         const newTrip = new Trip({
             code: req.body.code,
             name: req.body.name,
@@ -405,10 +371,18 @@ const tripsAddTrip = async (req, res) => {
             resort: req.body.resort,
             perPerson: req.body.perPerson,
             image: req.body.image,
-            description: req.body.description
+            description: req.body.description,
+
+            // Associate the new trip with the administrator who submitted the 
+            // authenticated request.
+            createdBy: creatorId
         });
 
         const q = await newTrip.save();
+
+        // Populate the relationship so the response contains useful creator information 
+        // instead of only an ObjectId.
+        await q.populate('createdBy', 'name email');
 
         return res
             .status(201)
